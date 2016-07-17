@@ -17,7 +17,6 @@ Expects the following environment variables to be set:
 
 Variable | Notes
 -------- | -----
-
 MYSQL_HOST | MySQL server to connect to
 MYSQL_PORT | MySQL server port to connect to
 MYSQL_NAME | MySQL database name to dump
