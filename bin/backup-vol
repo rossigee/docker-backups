@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Warning fix...
+[ ! -d ~/.gnupg ] && mkdir ~/.gnupg && touch $HOME/.gnupg/gpg.conf
+
+# Incorporate datestamp into filename
+filename=$BACKUP_NAME-$(date +%Y%m%d%H%M%S)
+s3location=$S3_LOCATION$filename.tar.gpg
+echo "Dumping data for '$BACKUP_NAME' to '$s3location'..."
+
+# Dump into an encrypted file
+echo -e "\tDumping..."
+cd $BACKUP_DIR
+mkfifo /tmp/dumpstream.$$
+tar cf - . > /tmp/dumpstream.$$ &
+if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to dump data volume to FIFO."
+    exit 1
+fi
+
+echo -e "\tEncrypting..."
+mkfifo /tmp/passphrase.$$
+echo $PASSPHRASE > /tmp/passphrase.$$ &
+gpg2 --batch --yes -q --passphrase-fd 4 -c - \
+        4< /tmp/passphrase.$$ \
+        < /tmp/dumpstream.$$ \
+        > /tmp/$BACKUP_NAME.tar.gpg
+if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to encrypt data volume file."
+    exit 1
+fi
+
+# Report on size of dump
+dumpsize=$(du -sh /tmp/$BACKUP_NAME.tar.gpg)
+echo "Dump size: $dumpsize"
+
+# Push on up to S3
+aws s3 cp /tmp/$BACKUP_NAME.tar.gpg $s3location
+if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to upload data volume dump to S3."
+    exit 1
+fi
+
+rm /tmp/dumpstream.$$
+rm /tmp/passphrase.$$
+echo "Done."

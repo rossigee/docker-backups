@@ -1,0 +1,57 @@
+#!/bin/bash
+
+cat >$HOME/.my.cnf <<EOF
+[client]
+host=$MYSQL_HOST
+port=$MYSQL_PORT
+user=$MYSQL_USER
+password=$MYSQL_PASS
+EOF
+
+mkdir ~/.gnupg && cat >$HOME/.gnupg/gpg.conf <<EOF
+# Nothing required - presence is a warning fix
+EOF
+
+# TODO: Check inputs
+
+# Incorporate datestamp into filename
+filename=$MYSQL_NAME-$(date +%Y%m%d%H%M%S)
+s3location=$S3_LOCATION$filename.sql.gpg
+echo "Dumping database '$MYSQL_NAME' to '$s3location'..."
+
+# Dump into an encrypted file
+echo -e "\tDumping..."
+mkfifo /tmp/dumpstream.$$
+mysqldump -R $MYSQL_NAME > /tmp/dumpstream.$$ &
+if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to dump database to FIFO."
+    exit 1
+fi
+
+echo -e "\tEncrypting..."
+mkfifo /tmp/passphrase.$$
+echo $PASSPHRASE > /tmp/passphrase.$$ &
+gpg2 --batch --yes -q --passphrase-fd 4 -c - \
+        4< /tmp/passphrase.$$ \
+        < /tmp/dumpstream.$$ \
+        > /tmp/$MYSQL_NAME.sql.gpg
+if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to encrypt database file."
+    exit 1
+fi
+
+# Report on size of dump
+dumpsize=$(du -sh /tmp/$MYSQL_NAME.sql.gpg)
+echo "Dump size: $dumpsize"
+
+# Push on up to S3
+aws s3 cp /tmp/$MYSQL_NAME.sql.gpg $s3location
+if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to upload database dump to S3."
+    exit 1
+fi
+
+rm -f /tmp/dumpstream.$$
+rm -f /tmp/passphrase.$$
+
+echo "Done."

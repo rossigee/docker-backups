@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# TODO: Identify backup to use. For now, user must specify
+#echo "Identifying most recent backup at provided backup location..."
+#mkfifo filelist
+#aws s3 ls $S3_LOCATION > filelist &
+
+cat >$HOME/.my.cnf <<EOF
+[client]
+host=$MYSQL_HOST
+port=$MYSQL_PORT
+user=$MYSQL_USER
+password=$MYSQL_PASS
+EOF
+
+mkdir ~/.gnupg && cat >$HOME/.gnupg/gpg.conf <<EOF
+# Nothing required - presence is a warning fix
+EOF
+
+# TODO: Check inputs
+
+echo "Fetching $1..."
+aws s3 cp $1 /tmp/dumpfile.sql.gpg
+if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to download database dump from S3."
+    exit 1
+fi
+
+echo -e "\tDecrypting..."
+mkfifo /tmp/passphrase.$$
+echo $PASSPHRASE > /tmp/passphrase.$$ &
+mkfifo /tmp/sqldump.$$
+gpg2 --batch --yes -q --passphrase-fd 4 -d - \
+        4< /tmp/passphrase.$$ \
+        < /tmp/dumpfile.sql.gpg \
+        > /tmp/sqldump.$$ &
+if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to decrypt database file."
+    exit 1
+fi
+
+echo -e "\tRestoring..."
+mysql $MYSQL_NAME < /tmp/sqldump.$$
+if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to restore database file."
+    exit 1
+fi
+
+rm /tmp/sqldump.$$
+rm /tmp/passphrase.$$
+
+echo "Done."
