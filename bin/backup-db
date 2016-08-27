@@ -52,5 +52,6 @@ fi
 
 rm -f /tmp/dumpstream.$$
 rm -f /tmp/passphrase.$$
+rm -f /tmp/$MYSQL_NAME.sql.gpg
 
 echo "Done."

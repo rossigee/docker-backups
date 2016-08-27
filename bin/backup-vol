@@ -43,4 +43,6 @@ fi
 
 rm /tmp/dumpstream.$$
 rm /tmp/passphrase.$$
+rm /tmp/$BACKUP_NAME.tar.gpg
+
 echo "Done."
