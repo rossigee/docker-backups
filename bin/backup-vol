@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Warning fix...
-[ ! -d ~/.gnupg ] && mkdir ~/.gnupg && touch $HOME/.gnupg/gpg.conf
+[ ! -d ~/.gnupg ] && mkdir ~/.gnupg && touch ~/.gnupg/gpg.conf
 
 # Incorporate datestamp into filename
 filename=$BACKUP_NAME-$(date +%Y%m%d%H%M%S)

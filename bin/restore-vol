@@ -6,7 +6,7 @@
 #aws s3 ls $S3_LOCATION > filelist &
 
 # Warning fix...
-[ ! -d ~/.gnupg ] && mkdir ~/.gnupg && touch $HOME/.gnupg/gpg.conf
+[ ! -d ~/.gnupg ] && mkdir ~/.gnupg && touch ~/.gnupg/gpg.conf
 
 echo "Fetching $1..."
 aws s3 cp $1 /tmp/dumpfile.tar.gpg

@@ -8,9 +8,8 @@ user=$MYSQL_USER
 password=$MYSQL_PASS
 EOF
 
-mkdir ~/.gnupg && cat >$HOME/.gnupg/gpg.conf <<EOF
-# Nothing required - presence is a warning fix
-EOF
+# Warning fix...
+[ ! -d ~/.gnupg ] && mkdir ~/.gnupg && touch ~/.gnupg/gpg.conf
 
 # TODO: Check inputs
 
