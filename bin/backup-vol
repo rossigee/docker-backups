@@ -10,7 +10,7 @@ echo "Dumping data for '$BACKUP_NAME' to '$s3location'..."
 
 # Dump into an encrypted file
 echo -e "\tDumping..."
-cd $BACKUP_DIR
+cd $BACKUP_DIR || exit 1
 mkfifo /tmp/dumpstream.$$
 tar cf - . > /tmp/dumpstream.$$ &
 if [ $? -ne 0 ]; then
