@@ -30,6 +30,25 @@ Usage:
     docker run -ti exec backupcontainer restore-db s3://bucket/snapshot.sql.gz
 
 
+# Dockerfile for postgresql backups
+
+Expects the following environment variables to be set:
+
+Variable | Notes
+-------- | -----
+PGSQL_HOST | MySQL server to connect to
+PGSQL_PORT | MySQL server port to connect to
+PGSQL_NAME | MySQL database name to dump
+PGSQL_USER | MySQL username to connect as
+PGSQL_PASS | MySQL password to use for authentication
+
+Usage:
+
+    docker run -ti exec backupcontainer backup-pgsql
+
+    docker run -ti exec backupcontainer restore-pgsql s3://bucket/snapshot.sql.gz
+
+
 # Dockerfile for volume backups
 
 Expects the following environment variables to be set:

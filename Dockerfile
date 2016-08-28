@@ -9,7 +9,8 @@ RUN sed -i 's/deb-src/# deb-src/' /etc/apt/sources.list
 RUN apt-get update && \
     apt-get upgrade -y -f && \
     apt-get install --no-install-recommends -y --allow-unauthenticated \
-        curl git awscli zip unzip rsync awscli gnupg2 mariadb-client vim && \
+        curl git awscli zip unzip rsync awscli gnupg2 mariadb-client vim \
+        postgresql-client-9.5 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -17,6 +18,8 @@ RUN apt-get update && \
 COPY bin/* /usr/local/bin/
 RUN chmod 755 \
     /usr/local/bin/backup-db \
+    /usr/local/bin/backup-pgsql \
     /usr/local/bin/backup-vol \
     /usr/local/bin/restore-db \
-    /usr/local/bin/restore-vol
+    /usr/local/bin/restore-vol \
+    /usr/local/bin/restore-pgsql
