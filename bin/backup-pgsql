@@ -1,12 +1,5 @@
 #!/bin/bash
 
-cat >$HOME/.pgpass <<EOF
-$PGSQL_HOST:4567:$PGSQL_NAME:$PGSQL_USER:$PGSQL_PASS
-EOF
-
-# Warning fix...
-[ ! -d ~/.gnupg ] && mkdir ~/.gnupg && touch ~/.gnupg/gpg.conf
-
 # TODO: Check inputs
 
 # Incorporate datestamp into filename

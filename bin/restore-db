@@ -5,17 +5,6 @@
 #mkfifo filelist
 #aws s3 ls $S3_LOCATION > filelist &
 
-cat >$HOME/.my.cnf <<EOF
-[client]
-host=$MYSQL_HOST
-port=$MYSQL_PORT
-user=$MYSQL_USER
-password=$MYSQL_PASS
-EOF
-
-# Warning fix...
-[ ! -d ~/.gnupg ] && mkdir ~/.gnupg && touch ~/.gnupg/gpg.conf
-
 # TODO: Check inputs
 
 echo "Fetching $1..."

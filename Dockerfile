@@ -23,3 +23,7 @@ RUN chmod 755 \
     /usr/local/bin/restore-db \
     /usr/local/bin/restore-vol \
     /usr/local/bin/restore-pgsql
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod 755 /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

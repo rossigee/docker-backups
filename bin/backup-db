@@ -1,16 +1,5 @@
 #!/bin/bash
 
-cat >$HOME/.my.cnf <<EOF
-[client]
-host=$MYSQL_HOST
-port=$MYSQL_PORT
-user=$MYSQL_USER
-password=$MYSQL_PASS
-EOF
-
-# Warning fix...
-[ ! -d ~/.gnupg ] && mkdir ~/.gnupg && touch ~/.gnupg/gpg.conf
-
 # TODO: Check inputs
 
 # Incorporate datestamp into filename
