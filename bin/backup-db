@@ -29,8 +29,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # Report on size of dump
-dumpsize=$(du -sh /tmp/$MYSQL_NAME.sql.gpg)
-echo "Dump size: $dumpsize"
+dumpsize=$(du -sb /tmp/$MYSQL_NAME.sql.gpg | cut -f1)
+#echo "Dump size: $dumpsize"
 
 # Push on up to S3
 aws s3 cp /tmp/$MYSQL_NAME.sql.gpg $s3location
@@ -39,8 +39,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Tidy up
 rm -f /tmp/dumpstream.$$
 rm -f /tmp/passphrase.$$
 rm -f /tmp/$MYSQL_NAME.sql.gpg
 
-echo "Done."
+# Report
+echo $dumpsize

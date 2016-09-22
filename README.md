@@ -29,6 +29,8 @@ Usage:
 
     docker run -ti exec backupcontainer restore-db s3://bucket/snapshot.sql.gz
 
+If successful, the size (in bytes) of the backup file is reported on standard output.
+
 
 # Dockerfile for postgresql backups
 
