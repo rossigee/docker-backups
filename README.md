@@ -29,7 +29,7 @@ Usage:
 
     docker run -ti exec backupcontainer restore-db s3://bucket/snapshot.sql.gz
 
-If successful, the size (in bytes) of the backup file is reported on standard output.
+If successful, a report on the size and timings of the backup file is reported on standard output. It is based on the format used by Prometheus, but should still be easily parseable for other uses.
 
 
 # Dockerfile for postgresql backups

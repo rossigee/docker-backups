@@ -3,10 +3,11 @@
 # Incorporate datestamp into filename
 filename=$BACKUP_NAME-$(date +%Y%m%d%H%M%S)
 s3location=$S3_LOCATION$filename.tar.gpg
-echo "Dumping data for '$BACKUP_NAME' to '$s3location'..."
+#echo "Dumping data for '$BACKUP_NAME' to '$s3location'..."
 
 # Dump into an encrypted file
-echo -e "\tDumping..."
+#echo -e "\tDumping..."
+dumpstarttime=$(date +%s)
 cd $BACKUP_DIR || exit 1
 mkfifo /tmp/dumpstream.$$
 tar cf - . > /tmp/dumpstream.$$ &
@@ -15,7 +16,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo -e "\tEncrypting..."
+#echo -e "\tEncrypting..."
 mkfifo /tmp/passphrase.$$
 echo $PASSPHRASE > /tmp/passphrase.$$ &
 gpg2 --batch --yes -q --passphrase-fd 4 -c - \
@@ -27,21 +28,35 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Report on size of dump
-dumpsize=$(du -sb /tmp/$BACKUP_NAME.tar.gpg | cut -f1)
-#echo "Dump size: $dumpsize"
-
 # Push on up to S3
-aws s3 cp /tmp/$BACKUP_NAME.tar.gpg $s3location
+uploadstarttime=$(date +%s)
+aws s3 cp --quiet /tmp/$BACKUP_NAME.tar.gpg $s3location
 if [ $? -ne 0 ]; then
     echo "ERROR: Unable to upload data volume dump to S3."
     exit 1
 fi
+
+# Report on size and timings of dump
+dumpsize=$(du -sb /tmp/$BACKUP_NAME.tar.gpg | cut -f1)
+endtime=$(date +%s)
+dumptime=$[uploadstarttime - dumpstarttime]
+uploadtime=$[endtime - uploadstarttime]
 
 # Tidy up
 rm /tmp/dumpstream.$$
 rm /tmp/passphrase.$$
 rm /tmp/$BACKUP_NAME.tar.gpg
 
-# Report
-echo $dumpsize
+# Report (Prometheus format)
+echo "# HELP backup_size Size of backup file in bytes"
+echo "# TYPE backup_size gauge"
+echo "backup_size $dumpsize"
+echo "# HELP backup_dumptime Time taken to dump and encrypt backup in seconds"
+echo "# TYPE backup_dumptime gauge"
+echo "backup_dumptime $dumptime"
+echo "# HELP backup_uploadtime Time taken to upload backup in seconds"
+echo "# TYPE backup_uploadtime gauge"
+echo "backup_uploadtime $uploadtime"
+echo "# HELP backup_timestamp Time backup completed as seconds-since-the-epoch"
+echo "# TYPE backup_timestamp counter"
+echo "backup_timestamp $endtime"
