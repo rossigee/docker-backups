@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -n "$MYSQL_NAME" ]; then
+if [ -n "$MYSQL_HOST" ]; then
     echo "Configuring MySQL client settings..."
     cat >$HOME/.my.cnf <<EOF
 [client]
@@ -12,10 +12,10 @@ EOF
     chmod 400 $HOME/.my.cnf
 fi
 
-if [ -n "$PGSQL_NAME" ]; then
+if [ -n "$PGSQL_HOST" ]; then
     echo "Configuring PostGresQL client settings..."
     cat >$HOME/.pgpass <<EOF
-$PGSQL_HOST:4567:$PGSQL_NAME:$PGSQL_USER:$PGSQL_PASS
+$PGSQL_HOST:5432:$PGSQL_NAME:$PGSQL_USER:$PGSQL_PASS
 EOF
     chmod 400 $HOME/.pgpass
 fi
